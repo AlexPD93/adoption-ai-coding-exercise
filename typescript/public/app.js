@@ -76,6 +76,7 @@ function renderCreate() {
     app.innerHTML = `
         <button data-href="/">← Back</button>
         <form id="create-form">
+            <div id="error-message" style="color: red; margin-bottom: 10px;"></div>
             <label>Title <input name="title"></label>
             <label>Body <textarea name="body"></textarea></label>
             <label>AI tool used <input name="ai_tool"></label>
@@ -83,14 +84,28 @@ function renderCreate() {
             <button type="submit">Create</button>
         </form>
     `;
-    document.getElementById("create-form").addEventListener("submit", async (e) => {
+
+    const form = document.getElementById("create-form");
+    const errorDiv = document.getElementById("error-message");
+
+    form.addEventListener("submit", async (e) => {
         e.preventDefault();
+
+        errorDiv.textContent = "";
+
         const data = Object.fromEntries(new FormData(e.target));
         const res = await fetch("/api/usecases", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
+
+        if (!res.ok) {
+            const { error } = await res.json();
+            errorDiv.textContent = error;
+            return;
+        }
+
         const { id } = await res.json();
         navigate(`/usecase/${id}`);
     });

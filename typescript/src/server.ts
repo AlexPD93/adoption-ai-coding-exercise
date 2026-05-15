@@ -19,13 +19,27 @@ app.get("/api/usecases/:id", (req, res) => {
     const row = db
         .prepare("SELECT * FROM usecases WHERE id = ?")
         .get(req.params.id);
+
+    if (!row) {
+        return res.status(404).json({ error: "Use case not found" });
+    }
+
     res.json(row);
 });
 
 app.post("/api/usecases", (req, res) => {
     const id = randomUUID();
     const { title, body, ai_tool, time_saved_minutes } = req.body;
-    const minutes_saved = parseInt(time_saved_minutes, 10) || 0;
+
+    if (!title?.trim() || !body?.trim() || !ai_tool?.trim()) {
+        return res.status(400).json({ error: "All fields are required." });
+    }
+
+    const minutes_saved = parseInt(time_saved_minutes, 10);
+    if (isNaN(minutes_saved) || minutes_saved < 0) {
+        return res.status(400).json({ error: "Time saved must be 0 or a positive number." });
+    }
+
     db.prepare(
         "INSERT INTO usecases (id, title, body, ai_tool, time_saved_minutes) VALUES (?, ?, ?, ?, ?)"
     ).run(id, title, body, ai_tool, minutes_saved);
@@ -44,20 +58,20 @@ app.get("/usecase/*", (req, res) => {
 app.get("/api/stats", (req, res: Response<StatsResponse>) => {
     const { grandTotalMinutes } = db
         .prepare("SELECT SUM(time_saved_minutes) AS grandTotalMinutes from usecases")
-        .get() as {grandTotalMinutes: number} || {grandTotalMinutes: 0};
+        .get() as { grandTotalMinutes: number } || { grandTotalMinutes: 0 };
 
     const timeSavedPerTool = db
         .prepare("SELECT ai_tool AS aiTool, SUM(time_saved_minutes) AS totalTimeSaved from usecases GROUP BY ai_tool")
         .all() as ToolStats[];
 
-    res.json({ 
-        overallTotalTimeSaved: grandTotalMinutes || 0, 
+    res.json({
+        overallTotalTimeSaved: grandTotalMinutes || 0,
         timeSavedPerTool: timeSavedPerTool || []
     });
 })
 
 app.get("/stats", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "public", "index.html")); 
+    res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
 
 if (process.env.NODE_ENV !== "test") {
