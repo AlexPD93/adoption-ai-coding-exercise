@@ -21,7 +21,7 @@ Start with [`BRIEF.md`](./BRIEF.md) — it describes the task and what to build.
 3. **Seed the database:**
    In a separate terminal, run:
    ```bash
-   ./scripts/populate.sh http://localhost:3000
+   ../scripts/populate.sh http://localhost:3000
    ```
 
 4. **Running tests:**
