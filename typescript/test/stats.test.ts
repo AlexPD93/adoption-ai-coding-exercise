@@ -1,12 +1,8 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
-import app from "../src/server";
-import db from "../src/db";
-import Database from "better-sqlite3";
-import { formatTime } from "../public/utils.js";
-import { ToolStats } from "../src/types.js";
 
 vi.mock("../src/db", () => {
+    const Database = require("better-sqlite3");
     const mockDb = new Database(":memory:");
 
     mockDb.exec(`
@@ -24,6 +20,10 @@ vi.mock("../src/db", () => {
     };
 })
 
+import app from "../src/server";
+import db from "../src/db";
+import { formatTime } from "../public/utils.js";
+import { ToolStats } from "../src/types.js";
 
 describe("get stats endpoint integration tests", () => {
     beforeEach(() => {
