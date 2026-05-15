@@ -3,6 +3,7 @@ import request from "supertest";
 import app from "../src/server";
 import db from "../src/db";
 import Database from "better-sqlite3";
+import { formatTime } from "../public/utils.js";
 import { ToolStats } from "../src/types.js";
 
 vi.mock("../src/db", () => {
@@ -81,5 +82,23 @@ describe("get stats endpoint integration tests", () => {
         expect(res.status).toBe(200);
         expect(res.body.overallTotalTimeSaved).toBe(0);
         expect(res.body.timeSavedPerTool.length).toBe(0);
+    })
+})
+
+describe("formatTime helper", () => {
+    it("formats minutes to include hours", () => {
+        expect(formatTime(150)).toBe("2h 30min");
+    })
+
+    it("formats minutes without hours correctly", () => {
+        expect(formatTime(30)).toBe("30min");
+    })
+
+    it("handles exactly zero minutes", () => {
+        expect(formatTime(0)).toBe("0min");
+    })
+
+    it("handles whole hours without showing 0 min", () => {
+        expect(formatTime(60)).toBe("1h");
     })
 })
