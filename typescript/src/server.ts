@@ -41,8 +41,21 @@ app.get("/usecase/*", (req, res) => {
 });
 
 app.get("/api/stats", (req, res) => {
+    const { totalTimeSaved } = db
+        .prepare("SELECT SUM(time_saved_minutes) AS totalTimeSaved from usecases")
+        .get() as {totalTimeSaved: number} || {totalTimeSaved: 0};
 
+    const timeSavedPerTool = db
+        .prepare("SELECT ai_tool AS aiTool, SUM(time_saved_minutes) AS totalTimeSaved from usecases GROUP BY ai_tool")
+        .all();
+
+    res.json({ totalTimeSaved: totalTimeSaved || 0, 
+        timeSavedPerTool: timeSavedPerTool || []})
 })
+
+app.get("/stats", (req, res) => {
+    res.sendFile(path.join(__dirname, "..", "public", "index.html")); 
+});
 
 const PORT = 3000;
 app.listen(PORT, () => {
