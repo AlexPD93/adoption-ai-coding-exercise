@@ -1,32 +1,46 @@
 # AI Use Case Tracker
 
-Take-home starter for the Multiverse interview. A small app for authoring and managing AI use-cases (title, body, AI tool, time saved).
+A small app for authoring and managing AI use-cases, built with Express, SQLite, and vanilla JavaScript.
 
 Start with [`BRIEF.md`](./BRIEF.md) — it describes the task and what to build.
 
-## Pick a stack
+## Quick Start (TypeScript)
 
-Both starters are equivalent. Use whichever you're more comfortable with.
+1. **Install dependencies:**
+   ```bash
+   cd typescript
+   npm install
+   ```
 
-- [`python/`](./python) — FastAPI + SQLite + vanilla JS. Run on `http://localhost:8000`.
-- [`typescript/`](./typescript) — Express + SQLite + vanilla JS. Run on `http://localhost:3000`.
+2. **Start the server:**
+   ```bash
+   npm run dev
+   ```
+   The app will be running at [http://localhost:3000](http://localhost:3000).
 
-Each subdirectory has its own README with setup and run instructions.
+3. **Seed the database:**
+   In a separate terminal, run:
+   ```bash
+   ./scripts/populate.sh http://localhost:3000
+   ```
 
-## Helper scripts
+4. **Running tests:**
+   ```bash
+   cd typescript
+   npm test
+   ```
 
-`scripts/` contains two helpers that hit the running API:
+## Helper Scripts
 
-- `./scripts/populate.sh [base-url]` — seeds the database with 9 example use cases.
-- `./scripts/cleanup.sh  [base-url]` — deletes every use case.
+Located in `scripts/`, these use the running API:
 
-Default base URL is `http://localhost:8000`. Pass `http://localhost:3000` for the TypeScript stack.
+- `./scripts/populate.sh [base-url]` — Seeds the database with 9 example use cases.
+- `./scripts/cleanup.sh [base-url]` — Deletes every use case.
+
+*Note: For this TypeScript project, always pass `http://localhost:3000` to these scripts.*
 
 ## Layout
 
-```
-BRIEF.md           the task
-python/            FastAPI starter
-typescript/        Express starter
-scripts/           seed + cleanup helpers
-```
+- `BRIEF.md`: The task description.
+- `typescript/`: Express + SQLite + vanilla JS starter.
+- `scripts/`: Seed and cleanup helper scripts.
