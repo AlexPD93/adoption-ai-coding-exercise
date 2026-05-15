@@ -43,4 +43,7 @@ Located in `scripts/`, these use the running API:
 
 - `BRIEF.md`: The task description.
 - `typescript/`: Express + SQLite + vanilla JS starter.
+  - `/src/`: Server and database logic.
+  - `/public/`: Frontend assets.
+  - `/test/`: Unit and integration tests.
 - `scripts/`: Seed and cleanup helper scripts.
