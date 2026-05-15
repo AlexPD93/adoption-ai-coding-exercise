@@ -26,9 +26,11 @@ async function render() {
 async function renderList() {
     const res = await fetch("/api/usecases");
     const usecases = await res.json();
-    app.innerHTML = `
-        <button data-href="/usecase/new">New use case</button>
-        <button data-href="/stats">Stats</button>
+    const html = usecases.length === 0 ? `
+    <div>
+        <p class="empty-state-message">No use cases recorded yet. Be the first to add one!</p>
+    </div>
+    ` : `
         <ul class="list">
             ${usecases.map(u => `
                 <li>
@@ -37,6 +39,11 @@ async function renderList() {
                 </li>
             `).join("")}
         </ul>
+    `;
+    app.innerHTML = `
+        <button data-href="/usecase/new">New use case</button>
+        <button data-href="/stats">Stats</button>
+        ${html}
     `;
 }
 
