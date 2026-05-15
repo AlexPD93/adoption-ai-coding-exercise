@@ -8,7 +8,7 @@ db.exec(`
         title TEXT,
         body TEXT,
         ai_tool TEXT,
-        time_saved_minutes TEXT
+        time_saved_minutes INTEGER
     )
 `);
 
