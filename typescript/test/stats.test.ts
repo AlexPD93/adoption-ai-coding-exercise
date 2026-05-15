@@ -1,5 +1,9 @@
-import { vi } from "vitest";
+import { vi, describe, it, expect, beforeEach } from "vitest";
+import request from "supertest";
+import app from "../src/server";
+import db from "../src/db";
 import Database from "better-sqlite3";
+import { ToolStats } from "../src/types.js";
 
 vi.mock("../src/db", () => {
     const mockDb = new Database(":memory:");
@@ -17,4 +21,65 @@ vi.mock("../src/db", () => {
     return {
         default: mockDb
     };
+})
+
+
+describe("get stats endpoint integration tests", () => {
+    beforeEach(() => {
+        db.prepare("DELETE FROM usecases").run();
+    });
+
+    it("aggregates data correctly for a single case", async () => {
+        const insert = db.prepare("INSERT INTO usecases (id, title, body, ai_tool, time_saved_minutes) VALUES (?, ?, ?, ?, ?)");
+
+        insert.run("1", "Email", "Drafting...", "ChatGPT", 30);
+
+        const res = await request(app).get("/api/stats");
+        expect(res.status).toBe(200);
+        expect(res.body.overallTotalTimeSaved).toBe(30);
+
+        const chatGPT = res.body.timeSavedPerTool.find((tool: ToolStats) => tool.aiTool === "ChatGPT");
+
+        expect(res.body.timeSavedPerTool.length).toBe(1);
+        expect(chatGPT.totalTimeSaved).toBe(30);
+    })
+
+    it("aggregates data correctly for multiple cases", async () => {
+        const insert = db.prepare("INSERT INTO usecases (id, title, body, ai_tool, time_saved_minutes) VALUES (?, ?, ?, ?, ?)");
+
+        insert.run("1", "Email", "Drafting...", "ChatGPT", 30);
+        insert.run("2", "Summarizing", "Reading...", "ChatGPT", 20);
+        insert.run("3", "Coding", "Debugging...", "Claude", 15);
+
+        const res = await request(app).get("/api/stats");
+        expect(res.status).toBe(200);
+        expect(res.body.overallTotalTimeSaved).toBe(65);
+
+        const chatGPT = res.body.timeSavedPerTool.find((tool: ToolStats) => tool.aiTool === "ChatGPT");
+        const claude = res.body.timeSavedPerTool.find((tool: ToolStats) => tool.aiTool === "Claude");
+
+        expect(res.body.timeSavedPerTool.length).toBe(2);
+        expect(chatGPT.totalTimeSaved).toBe(50);
+        expect(claude.totalTimeSaved).toBe(15);
+    })
+
+    it("handles unexpected nulls or missing data gracefully", async () => {
+        const insert = db.prepare("INSERT INTO usecases (id, title, body, ai_tool, time_saved_minutes) VALUES (?, ?, ?, ?, ?)");
+
+        insert.run("99", "Broken", "Drafting", "Claude", null);
+        insert.run("100", "Working", "Drafting", "ChatGPT", 20);
+
+        const res = await request(app).get("/api/stats");
+
+        expect(res.status).toBe(200);
+        expect(res.body.overallTotalTimeSaved).toBe(20);
+    })
+
+    it("returns zeros when the database is completely empty", async () => {
+        const res = await request(app).get("/api/stats");
+
+        expect(res.status).toBe(200);
+        expect(res.body.overallTotalTimeSaved).toBe(0);
+        expect(res.body.timeSavedPerTool.length).toBe(0);
+    })
 })
