@@ -24,9 +24,10 @@ app.get("/api/usecases/:id", (req, res) => {
 app.post("/api/usecases", (req, res) => {
     const id = randomUUID();
     const { title, body, ai_tool, time_saved_minutes } = req.body;
+    const minutes_saved = parseInt(time_saved_minutes, 10) || 0;
     db.prepare(
         "INSERT INTO usecases (id, title, body, ai_tool, time_saved_minutes) VALUES (?, ?, ?, ?, ?)"
-    ).run(id, title, body, ai_tool, time_saved_minutes);
+    ).run(id, title, body, ai_tool, minutes_saved);
     res.json({ id });
 });
 
