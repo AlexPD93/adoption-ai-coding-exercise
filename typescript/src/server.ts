@@ -60,7 +60,11 @@ app.get("/stats", (req, res) => {
     res.sendFile(path.join(__dirname, "..", "public", "index.html")); 
 });
 
-const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`Listening on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== "test") {
+    const PORT = 3000;
+    app.listen(PORT, () => {
+        console.log(`Listening on http://localhost:${PORT}`);
+    });
+}
+
+export default app;
