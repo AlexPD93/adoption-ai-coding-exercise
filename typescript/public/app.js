@@ -56,11 +56,11 @@ async function renderView(id) {
 
 async function renderStats() {
     const res = await fetch("/api/stats");
-    const { totalTimeSaved, timeSavedPerTool } = await res.json();
+    const { overallTotalTimeSaved, timeSavedPerTool } = await res.json();
     app.innerHTML = `
         <button data-href="/">← Back</button>
         <h2>Stats</h2>
-        <p class="meta"><strong>Total time saved:</strong> ${formatTime(totalTimeSaved)}</p>
+        <p class="meta"><strong>Total time saved:</strong> ${formatTime(overallTotalTimeSaved)}</p>
         <ul class="list">
             ${timeSavedPerTool.map(tool => `
                 <li>

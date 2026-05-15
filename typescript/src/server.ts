@@ -1,7 +1,8 @@
-import express from "express";
+import express, { Response } from "express";
 import path from "path";
 import { randomUUID } from "crypto";
 import db from "./db";
+import { ToolStats, StatsResponse } from "./types";
 
 const app = express();
 app.use(express.json());
@@ -40,17 +41,19 @@ app.get("/usecase/*", (req, res) => {
     res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
 
-app.get("/api/stats", (req, res) => {
-    const { totalTimeSaved } = db
-        .prepare("SELECT SUM(time_saved_minutes) AS totalTimeSaved from usecases")
-        .get() as {totalTimeSaved: number} || {totalTimeSaved: 0};
+app.get("/api/stats", (req, res: Response<StatsResponse>) => {
+    const { grandTotalMinutes } = db
+        .prepare("SELECT SUM(time_saved_minutes) AS grandTotalMinutes from usecases")
+        .get() as {grandTotalMinutes: number} || {grandTotalMinutes: 0};
 
     const timeSavedPerTool = db
         .prepare("SELECT ai_tool AS aiTool, SUM(time_saved_minutes) AS totalTimeSaved from usecases GROUP BY ai_tool")
-        .all();
+        .all() as ToolStats[];
 
-    res.json({ totalTimeSaved: totalTimeSaved || 0, 
-        timeSavedPerTool: timeSavedPerTool || []})
+    res.json({ 
+        overallTotalTimeSaved: grandTotalMinutes || 0, 
+        timeSavedPerTool: timeSavedPerTool || []
+    });
 })
 
 app.get("/stats", (req, res) => {
