@@ -10,17 +10,19 @@ I have extended the base application to include a robust "Stats" feature and imp
 
 -   **Stats API:** Created a new `/api/stats` endpoint using optimised SQL (`SUM` and `GROUP BY`) to calculate total time saved and per-tool breakdowns directly in the database.
 
--   **API Validation & Error Handling:** Implemented manual validation for `POST /api/usecases` to ensure required fields are present, strings are sanitised, and time values are valid positive integers.
+-   **Global Error Handling:** Protected API endpoints with `try...catch` blocks. If an unexpected database or server error occurs, it is caught, logged on the server for debugging, and sent back to the frontend as a clean 500 Internal Server Error message. This prevents the backend from crashing and ensures the API always returns predictable JSON.
 
-    -   Updated `GET /api/usecases/:id` to correctly return a `404 Not Found` status for non-existent records.
+- **Consistent Data Formats & Validation:** Updated all API endpoints to return data using standard camelCase naming conventions (`aiTool`, `timeSavedMinutes`). This perfectly matches typical JavaScript/TypeScript coding styles and keeps data shapes uniform across the app. Also added validation checks to ensure that text inputs are neatly trimmed and time values are strictly valid, positive numbers.
 
--   **Refined Frontend UX:**
+- **Frontend Error Catching:** Added conditional checks to all frontend data-fetching functions. If the API returns an error (like a `400`, `404`, or `500`), the frontend intercepts it, extracts the error message, and displays a clear fallback message directly in the UI instead of failing silently or freezing the screen.
 
-    -   **Empty States:** Added helpful fallback UI for the List view when no data is present in the database.
+**Refined Frontend UX:**
 
-    -   **Persistent Forms:** Refactored the "Create" view to use a dedicated error display area. This ensures that if a submission fails, the user’s input is preserved and the form remains interactive without requiring a page or DOM reload.
+-   **Empty States:** Added helpful fallback UI for the List view when no data is present in the database, ensuring a clean experience for first-time users.
 
-    -   **Time Formatting:** Created a shared utility to format large minute counts into a more readable `Xh Ym` format.
+-   **Persistent Forms:** Refactored form handlers to use a dedicated on-screen error element. If a validation fails, the user's typed data is preserved in the inputs, allowing them to correct mistakes without losing their progress to a full page reload.
+
+-   **Time Formatting:** Created a shared utility to format large minute counts into a much more readable `Xh Ym` format.
 
 * * * * *
 
@@ -66,7 +68,7 @@ I would implement Zod as a single source of truth for data models. This would pr
 
 ### 4\. Professional UX
 
--   **Loading States:** Add skeleton loaders or progress indicators to improve perceived performance on the data-heavy Stats and List views.
+-   **Loading States:** Add loading animations or spinners to improve perceived performance on the data-heavy Stats and List views.
 
 ### 5\. Ownership & Access Control
 
