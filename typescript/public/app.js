@@ -49,6 +49,17 @@ async function renderList() {
 
 async function renderView(id) {
     const res = await fetch(`/api/usecases/${id}`);
+
+    if (!res.ok) {
+        const {error} = await res.json();
+
+        app.innerHTML = `
+            <button data-href="/">← Back</button>
+            <p>${error}</p>
+        `;
+        return;
+    }
+
     const u = await res.json();
     app.innerHTML = `
         <button data-href="/">← Back</button>
