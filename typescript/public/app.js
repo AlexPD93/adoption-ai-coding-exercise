@@ -27,7 +27,7 @@ async function renderList() {
     const res = await fetch("/api/usecases");
 
     if (!res.ok) {
-        const {error} = await res.json();
+        const { error } = await res.json();
 
         app.innerHTML = `
             <button data-href="/">← Back</button>
@@ -62,7 +62,7 @@ async function renderView(id) {
     const res = await fetch(`/api/usecases/${id}`);
 
     if (!res.ok) {
-        const {error} = await res.json();
+        const { error } = await res.json();
 
         app.innerHTML = `
             <button data-href="/">← Back</button>
@@ -87,7 +87,7 @@ async function renderStats() {
     const res = await fetch("/api/stats");
 
     if (!res.ok) {
-        const {error} = await res.json();
+        const { error } = await res.json();
 
         app.innerHTML = `
             <button data-href="/">← Back</button>
