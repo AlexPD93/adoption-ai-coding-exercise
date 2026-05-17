@@ -8,4 +8,8 @@ interface StatsResponse {
     timeSavedPerTool: ToolStats[];
 }
 
-export type { ToolStats, StatsResponse };
+interface ErrorResponse {
+    error: string;
+}
+
+export type { ToolStats, StatsResponse, ErrorResponse };
