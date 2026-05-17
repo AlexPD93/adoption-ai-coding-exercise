@@ -72,8 +72,11 @@ describe("get stats endpoint integration tests", () => {
 
         const res = await request(app).get("/api/stats");
 
+        const claude = res.body.timeSavedPerTool.find((tool: ToolStats) => tool.aiTool === "Claude");
+
         expect(res.status).toBe(200);
         expect(res.body.overallTotalTimeSaved).toBe(20);
+        expect(claude.totalTimeSaved).toBe(0);
     })
 
     it("returns zeros when the database is completely empty", async () => {
