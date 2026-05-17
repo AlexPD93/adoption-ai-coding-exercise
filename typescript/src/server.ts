@@ -37,23 +37,28 @@ app.get("/api/usecases/:id", (req, res: Response<UseCaseResponse | ErrorResponse
     }
 });
 
-app.post("/api/usecases", (req, res) => {
-    const id = randomUUID();
-    const { title, body, ai_tool, time_saved_minutes } = req.body;
+app.post("/api/usecases", (req, res: Response<UseCaseResponse | ErrorResponse>) => {
+    try {
+        const id = randomUUID();
+        const { title, body, ai_tool, time_saved_minutes } = req.body;
 
-    if (!title?.trim() || !body?.trim() || !ai_tool?.trim()) {
-        return res.status(400).json({ error: "All fields are required." });
+        if (!title?.trim() || !body?.trim() || !ai_tool?.trim()) {
+            return res.status(400).json({ error: "All fields are required." });
+        }
+
+        const minutes_saved = parseInt(time_saved_minutes, 10);
+        if (isNaN(minutes_saved) || minutes_saved < 0) {
+            return res.status(400).json({ error: "Time saved must be 0 or a positive number." });
+        }
+
+        db.prepare(
+            "INSERT INTO usecases (id, title, body, ai_tool, time_saved_minutes) VALUES (?, ?, ?, ?, ?)"
+        ).run(id, title, body, ai_tool, minutes_saved);
+        res.json({ id, title, body, ai_tool, time_saved_minutes: minutes_saved });
+    } catch (error) {
+        console.error("Internal Server Error: ", error);
+        res.status(500).json({ error: "Internal Server Error." });
     }
-
-    const minutes_saved = parseInt(time_saved_minutes, 10);
-    if (isNaN(minutes_saved) || minutes_saved < 0) {
-        return res.status(400).json({ error: "Time saved must be 0 or a positive number." });
-    }
-
-    db.prepare(
-        "INSERT INTO usecases (id, title, body, ai_tool, time_saved_minutes) VALUES (?, ?, ?, ?, ?)"
-    ).run(id, title, body, ai_tool, minutes_saved);
-    res.json({ id });
 });
 
 app.delete("/api/usecases", (req, res) => {
