@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from "vitest";
+import { vi, describe, it, expect, beforeEach, vitest } from "vitest";
 import request from "supertest";
 
 vi.mock("../src/db", () => {
@@ -28,6 +28,7 @@ import { ToolStats } from "../src/types.js";
 describe("get stats endpoint integration tests", () => {
     beforeEach(() => {
         db.prepare("DELETE FROM usecases").run();
+        vi.restoreAllMocks();
     });
 
     it("aggregates data correctly for a single case", async () => {
@@ -85,6 +86,17 @@ describe("get stats endpoint integration tests", () => {
         expect(res.status).toBe(200);
         expect(res.body.overallTotalTimeSaved).toBe(0);
         expect(res.body.timeSavedPerTool.length).toBe(0);
+    })
+
+    it("returns 500 error if there is a problem with the database or server", async () => {
+        vi.spyOn(db, "prepare").mockImplementationOnce(() => {
+            throw new Error("Internal Server Error.");
+        });
+
+        const res = await request(app).get("/api/stats");
+
+        expect(res.status).toBe(500);
+        expect(res.body.error).toBe("Internal Server Error.")
     })
 })
 
