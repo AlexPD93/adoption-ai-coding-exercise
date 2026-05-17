@@ -8,11 +8,16 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "..", "public")));
 
-app.get("/api/usecases", (req, res) => {
-    const rows = db
-        .prepare("SELECT * FROM usecases ORDER BY rowid DESC")
-        .all();
-    res.json(rows);
+app.get("/api/usecases", (req, res: Response<UseCaseResponse[] | ErrorResponse>) => {
+    try {
+        const rows = db
+            .prepare("SELECT * FROM usecases ORDER BY rowid DESC")
+            .all() as UseCaseResponse[] | [];
+        res.json(rows);
+    } catch (error) {
+        console.error("Internal Server Error: ", error);
+        res.status(500).json({ error: "Internal Server Error." });
+    }
 });
 
 app.get("/api/usecases/:id", (req, res: Response<UseCaseResponse | ErrorResponse>) => {
@@ -50,6 +55,15 @@ app.post("/api/usecases", (req, res) => {
     ).run(id, title, body, ai_tool, minutes_saved);
     res.json({ id });
 });
+
+app.patch("/api/usecases/:id", (req, res) => {
+    const { id } = req.params;
+    const { title, body, ai_tool, time_saved_minutes } = req.body;
+
+    if (!id) {
+        return res.status(400).json({ error: "ID is required." });
+    }
+})
 
 app.delete("/api/usecases", (req, res) => {
     const result = db.prepare("DELETE FROM usecases").run();
