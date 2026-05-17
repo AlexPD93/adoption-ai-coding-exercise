@@ -56,16 +56,18 @@ app.get("/usecase/*", (req, res) => {
 });
 
 app.get("/api/stats", (req, res: Response<StatsResponse>) => {
-    const { grandTotalMinutes } = db
+    const totalRow = db
         .prepare("SELECT SUM(time_saved_minutes) AS grandTotalMinutes from usecases")
-        .get() as { grandTotalMinutes: number } || { grandTotalMinutes: 0 };
+        .get() as { grandTotalMinutes: number | null } | undefined;
+
+    const grandTotalMinutes = totalRow?.grandTotalMinutes || 0;
 
     const timeSavedPerTool = db
         .prepare("SELECT ai_tool AS aiTool, COALESCE(SUM(time_saved_minutes), 0) AS totalTimeSaved from usecases GROUP BY ai_tool")
         .all() as ToolStats[];
 
     res.json({
-        overallTotalTimeSaved: grandTotalMinutes || 0,
+        overallTotalTimeSaved: grandTotalMinutes,
         timeSavedPerTool: timeSavedPerTool || []
     });
 })
