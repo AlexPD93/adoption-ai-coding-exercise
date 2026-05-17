@@ -30,8 +30,7 @@ async function renderList() {
         const { error } = await res.json();
 
         app.innerHTML = `
-            <button data-href="/">← Back</button>
-            <p style="color: red; margin-top: 20px;"><strong>Error:</strong> ${error}</p>
+            <p class="error-message"><strong>Error:</strong> ${error}</p>
         `;
         return;
     }
@@ -66,7 +65,7 @@ async function renderView(id) {
 
         app.innerHTML = `
             <button data-href="/">← Back</button>
-            <p style="color: red; margin-top: 20px;"><strong>Error:</strong> ${error}</p>
+            <p class="error-message"><strong>Error:</strong> ${error}</p>
         `;
         return;
     }
@@ -92,7 +91,7 @@ async function renderStats() {
         app.innerHTML = `
             <button data-href="/">← Back</button>
             <h2>Stats</h2>
-            <p style="color: red; margin-top: 20px;"><strong>Error:</strong> ${error}</p>
+            <p class="error-message"><strong>Error:</strong> ${error}</p>
         `;
         return;
     }
@@ -117,7 +116,7 @@ function renderCreate() {
     app.innerHTML = `
         <button data-href="/">← Back</button>
         <form id="create-form">
-            <div id="error-message" style="color: red; margin-bottom: 10px;"></div>
+            <p id="error-message" class="error-message"></p>
             <label>Title <input name="title"></label>
             <label>Body <textarea name="body"></textarea></label>
             <label>AI tool used <input name="ai_tool"></label>
