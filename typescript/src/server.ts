@@ -2,7 +2,7 @@ import express, { Response } from "express";
 import path from "path";
 import { randomUUID } from "crypto";
 import db from "./db";
-import { ToolStats, StatsResponse, ErrorResponse } from "./types";
+import { UseCaseResponse, ToolStats, StatsResponse, ErrorResponse } from "./types";
 
 const app = express();
 app.use(express.json());
@@ -15,16 +15,21 @@ app.get("/api/usecases", (req, res) => {
     res.json(rows);
 });
 
-app.get("/api/usecases/:id", (req, res) => {
-    const row = db
-        .prepare("SELECT * FROM usecases WHERE id = ?")
-        .get(req.params.id);
+app.get("/api/usecases/:id", (req, res: Response<UseCaseResponse | ErrorResponse>) => {
+    try {
+        const row = db
+            .prepare("SELECT * FROM usecases WHERE id = ?")
+            .get(req.params.id) as UseCaseResponse | undefined;
 
-    if (!row) {
-        return res.status(404).json({ error: "Use case not found" });
+        if (!row) {
+            return res.status(404).json({ error: "Use case not found" });
+        }
+
+        res.json(row);
+    } catch (error) {
+        console.error("Internal Server Error: ", error);
+        res.status(500).json({ error: "Internal Server Error." });
     }
-
-    res.json(row);
 });
 
 app.post("/api/usecases", (req, res) => {
@@ -72,7 +77,7 @@ app.get("/api/stats", (req, res: Response<StatsResponse | ErrorResponse>) => {
             timeSavedPerTool: timeSavedPerTool || []
         });
     } catch (error) {
-        console.error("Database error: ", error);
+        console.error("Internal Server Error: ", error);
         res.status(500).json({ error: "Internal Server Error." });
     }
 })
