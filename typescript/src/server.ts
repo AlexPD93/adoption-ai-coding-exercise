@@ -61,7 +61,7 @@ app.get("/api/stats", (req, res: Response<StatsResponse>) => {
         .get() as { grandTotalMinutes: number } || { grandTotalMinutes: 0 };
 
     const timeSavedPerTool = db
-        .prepare("SELECT ai_tool AS aiTool, SUM(time_saved_minutes) AS totalTimeSaved from usecases GROUP BY ai_tool")
+        .prepare("SELECT ai_tool AS aiTool, COALESCE(SUM(time_saved_minutes), 0) AS totalTimeSaved from usecases GROUP BY ai_tool")
         .all() as ToolStats[];
 
     res.json({
