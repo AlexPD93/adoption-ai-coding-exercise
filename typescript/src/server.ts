@@ -56,15 +56,6 @@ app.post("/api/usecases", (req, res) => {
     res.json({ id });
 });
 
-app.patch("/api/usecases/:id", (req, res) => {
-    const { id } = req.params;
-    const { title, body, ai_tool, time_saved_minutes } = req.body;
-
-    if (!id) {
-        return res.status(400).json({ error: "ID is required." });
-    }
-})
-
 app.delete("/api/usecases", (req, res) => {
     const result = db.prepare("DELETE FROM usecases").run();
     res.json({ deleted: result.changes });
