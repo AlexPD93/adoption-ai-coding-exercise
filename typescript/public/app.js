@@ -63,6 +63,18 @@ async function renderView(id) {
 
 async function renderStats() {
     const res = await fetch("/api/stats");
+
+    if (!res.ok) {
+        const {error} = await res.json();
+
+        app.innerHTML = `
+            <button data-href="/">← Back</button>
+            <h2>Stats</h2>
+            <p style="color: red; margin-top: 20px;"><strong>Error:</strong> ${error}</p>
+        `;
+        return;
+    }
+
     const { overallTotalTimeSaved, timeSavedPerTool } = await res.json();
     app.innerHTML = `
         <button data-href="/">← Back</button>
