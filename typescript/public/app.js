@@ -2,6 +2,28 @@ import { formatTime } from './utils.js';
 
 const app = document.getElementById("app");
 
+async function apiRequest(url, options = {}) {
+    try {
+        const res = await fetch(url, options);
+        const payload = await res.json();
+        
+        if (!res.ok) {
+            return { data: null, error: payload.error || "An unexpected error occurred." };
+        }
+        return { data: payload, error: null };
+    } catch (err) {
+        return { data: null, error: "Network communication failure. Please check your connection." };
+    }
+}
+
+function renderError(message, includeBackButton = true, heading = "") {
+    app.innerHTML = `
+        ${includeBackButton ? '<button data-href="/">← Back</button>' : ''}
+        ${heading ? `<h2>${heading}</h2>` : ''}
+        <p class="error-message"><strong>Error:</strong> ${message}</p>
+    `;
+}
+
 function navigate(path) {
     history.pushState({}, "", path);
     render();
@@ -24,28 +46,22 @@ async function render() {
 }
 
 async function renderList() {
-    const res = await fetch("/api/usecases");
+    const { data: usecases, error } = await apiRequest("/api/usecases");
 
-    if (!res.ok) {
-        const { error } = await res.json();
-
-        app.innerHTML = `
-            <p class="error-message"><strong>Error:</strong> ${error}</p>
-        `;
-        return;
+    if (error) {
+        return renderError(error, false);
     }
 
-    const usecases = await res.json();
     const html = usecases.length === 0 ? `
     <div>
         <p class="empty-state-message">No use cases recorded yet. Be the first to add one!</p>
     </div>
     ` : `
         <ul class="list">
-            ${usecases.map(u => `
+            ${usecases.map(usecase => `
                 <li>
-                    <a href="/usecase/${u.id}" data-link>${u.title}</a>
-                    <span class="meta">${u.aiTool} · ${u.timeSavedMinutes} min saved</span>
+                    <a href="/usecase/${usecase.id}" data-link>${usecase.title}</a>
+                    <span class="meta">${usecase.aiTool} · ${usecase.timeSavedMinutes} min saved</span>
                 </li>
             `).join("")}
         </ul>
@@ -58,45 +74,32 @@ async function renderList() {
 }
 
 async function renderView(id) {
-    const res = await fetch(`/api/usecases/${id}`);
+    const { data: usecase, error } = await apiRequest(`/api/usecases/${id}`);
 
-    if (!res.ok) {
-        const { error } = await res.json();
-
-        app.innerHTML = `
-            <button data-href="/">← Back</button>
-            <p class="error-message"><strong>Error:</strong> ${error}</p>
-        `;
-        return;
+    if (error) {
+        return renderError(error);
     }
 
-    const u = await res.json();
     app.innerHTML = `
         <button data-href="/">← Back</button>
         <article>
-            <h2>${u.title}</h2>
-            <p class="meta"><strong>AI tool:</strong> ${u.aiTool}</p>
-            <p class="meta"><strong>Time saved:</strong> ${u.timeSavedMinutes} minutes</p>
-            <p>${u.body}</p>
+            <h2>${usecase.title}</h2>
+            <p class="meta"><strong>AI tool:</strong> ${usecase.aiTool}</p>
+            <p class="meta"><strong>Time saved:</strong> ${usecase.timeSavedMinutes} minutes</p>
+            <p>${usecase.body}</p>
         </article>
     `;
 }
 
 async function renderStats() {
-    const res = await fetch("/api/stats");
+    const { data, error } = await apiRequest("/api/stats");
 
-    if (!res.ok) {
-        const { error } = await res.json();
-
-        app.innerHTML = `
-            <button data-href="/">← Back</button>
-            <h2>Stats</h2>
-            <p class="error-message"><strong>Error:</strong> ${error}</p>
-        `;
-        return;
+    if (error) {
+        return renderError(error, true, "Stats");
     }
 
-    const { overallTotalTimeSaved, timeSavedPerTool } = await res.json();
+    const { overallTotalTimeSaved, timeSavedPerTool } = data;
+
     app.innerHTML = `
         <button data-href="/">← Back</button>
         <h2>Stats</h2>
@@ -133,21 +136,19 @@ function renderCreate() {
 
         errorDiv.textContent = "";
 
-        const data = Object.fromEntries(new FormData(e.target));
-        const res = await fetch("/api/usecases", {
+        const formData = Object.fromEntries(new FormData(e.target));
+        const { data, error } = await apiRequest("/api/usecases", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
+            body: JSON.stringify(formData),
         });
 
-        if (!res.ok) {
-            const { error } = await res.json();
+        if (error) {
             errorDiv.textContent = error;
             return;
         }
 
-        const { id } = await res.json();
-        navigate(`/usecase/${id}`);
+        navigate(`/usecase/${data.id}`);
     });
 }
 
