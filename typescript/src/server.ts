@@ -2,7 +2,7 @@ import express, { Response } from "express";
 import path from "path";
 import { randomUUID } from "crypto";
 import db from "./db";
-import { ToolStats, StatsResponse } from "./types";
+import { ToolStats, StatsResponse, ErrorResponse } from "./types";
 
 const app = express();
 app.use(express.json());
@@ -55,21 +55,26 @@ app.get("/usecase/*", (req, res) => {
     res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
 
-app.get("/api/stats", (req, res: Response<StatsResponse>) => {
-    const totalRow = db
-        .prepare("SELECT SUM(time_saved_minutes) AS grandTotalMinutes from usecases")
-        .get() as { grandTotalMinutes: number | null } | undefined;
+app.get("/api/stats", (req, res: Response<StatsResponse | ErrorResponse>) => {
+    try {
+        const totalRow = db
+            .prepare("SELECT SUM(time_saved_minutes) AS grandTotalMinutes from usecases")
+            .get() as { grandTotalMinutes: number | null } | undefined;
 
-    const grandTotalMinutes = totalRow?.grandTotalMinutes || 0;
+        const grandTotalMinutes = totalRow?.grandTotalMinutes || 0;
 
-    const timeSavedPerTool = db
-        .prepare("SELECT ai_tool AS aiTool, COALESCE(SUM(time_saved_minutes), 0) AS totalTimeSaved from usecases GROUP BY ai_tool")
-        .all() as ToolStats[];
+        const timeSavedPerTool = db
+            .prepare("SELECT ai_tool AS aiTool, COALESCE(SUM(time_saved_minutes), 0) AS totalTimeSaved from usecases GROUP BY ai_tool")
+            .all() as ToolStats[];
 
-    res.json({
-        overallTotalTimeSaved: grandTotalMinutes,
-        timeSavedPerTool: timeSavedPerTool || []
-    });
+        res.json({
+            overallTotalTimeSaved: grandTotalMinutes,
+            timeSavedPerTool: timeSavedPerTool || []
+        });
+    } catch (error) {
+        console.error("Database error: ", error);
+        res.status(500).json({ error: "Internal Server Error." });
+    }
 })
 
 app.get("/stats", (req, res) => {
