@@ -11,7 +11,7 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 app.get("/api/usecases", (req, res: Response<UseCaseResponse[] | ErrorResponse>) => {
     try {
         const rows = db
-            .prepare("SELECT * FROM usecases ORDER BY rowid DESC")
+            .prepare("SELECT id, title, body, ai_tool AS aiTool, time_saved_minutes AS timeSavedMinutes FROM usecases ORDER BY rowid DESC")
             .all() as UseCaseResponse[] | [];
         res.json(rows);
     } catch (error) {
@@ -23,7 +23,7 @@ app.get("/api/usecases", (req, res: Response<UseCaseResponse[] | ErrorResponse>)
 app.get("/api/usecases/:id", (req, res: Response<UseCaseResponse | ErrorResponse>) => {
     try {
         const row = db
-            .prepare("SELECT * FROM usecases WHERE id = ?")
+            .prepare("SELECT id, title, body, ai_tool AS aiTool, time_saved_minutes AS timeSavedMinutes FROM usecases WHERE id = ?")
             .get(req.params.id) as UseCaseResponse | undefined;
 
         if (!row) {
@@ -40,21 +40,21 @@ app.get("/api/usecases/:id", (req, res: Response<UseCaseResponse | ErrorResponse
 app.post("/api/usecases", (req, res: Response<UseCaseResponse | ErrorResponse>) => {
     try {
         const id = randomUUID();
-        const { title, body, ai_tool, time_saved_minutes } = req.body;
+        const { title, body, aiTool, timeSavedMinutes } = req.body;
 
-        if (!title?.trim() || !body?.trim() || !ai_tool?.trim()) {
+        if (!title?.trim() || !body?.trim() || !aiTool?.trim()) {
             return res.status(400).json({ error: "All fields are required." });
         }
 
-        const minutes_saved = parseInt(time_saved_minutes, 10);
-        if (isNaN(minutes_saved) || minutes_saved < 0) {
+        const minutesSaved = parseInt(timeSavedMinutes, 10);
+        if (isNaN(minutesSaved) || minutesSaved < 0) {
             return res.status(400).json({ error: "Time saved must be 0 or a positive number." });
         }
 
         db.prepare(
             "INSERT INTO usecases (id, title, body, ai_tool, time_saved_minutes) VALUES (?, ?, ?, ?, ?)"
-        ).run(id, title, body, ai_tool, minutes_saved);
-        res.json({ id, title, body, ai_tool, time_saved_minutes: minutes_saved });
+        ).run(id, title, body, aiTool, minutesSaved);
+        res.json({ id, title, body, aiTool, timeSavedMinutes: minutesSaved });
     } catch (error) {
         console.error("Internal Server Error: ", error);
         res.status(500).json({ error: "Internal Server Error." });

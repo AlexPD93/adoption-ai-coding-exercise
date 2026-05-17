@@ -2,8 +2,8 @@ interface UseCaseResponse {
     id: string
     title: string;
     body: string;
-    ai_tool: string;
-    time_saved_minutes: number;
+    aiTool: string;
+    timeSavedMinutes: number;
 }
 
 interface ToolStats {

@@ -45,7 +45,7 @@ async function renderList() {
             ${usecases.map(u => `
                 <li>
                     <a href="/usecase/${u.id}" data-link>${u.title}</a>
-                    <span class="meta">${u.ai_tool} · ${u.time_saved_minutes} min saved</span>
+                    <span class="meta">${u.aiTool} · ${u.timeSavedMinutes} min saved</span>
                 </li>
             `).join("")}
         </ul>
@@ -75,8 +75,8 @@ async function renderView(id) {
         <button data-href="/">← Back</button>
         <article>
             <h2>${u.title}</h2>
-            <p class="meta"><strong>AI tool:</strong> ${u.ai_tool}</p>
-            <p class="meta"><strong>Time saved:</strong> ${u.time_saved_minutes} minutes</p>
+            <p class="meta"><strong>AI tool:</strong> ${u.aiTool}</p>
+            <p class="meta"><strong>Time saved:</strong> ${u.timeSavedMinutes} minutes</p>
             <p>${u.body}</p>
         </article>
     `;
@@ -119,8 +119,8 @@ function renderCreate() {
             <p id="error-message" class="error-message"></p>
             <label>Title <input name="title"></label>
             <label>Body <textarea name="body"></textarea></label>
-            <label>AI tool used <input name="ai_tool"></label>
-            <label>Time saved (minutes) <input name="time_saved_minutes"></label>
+            <label>AI tool used <input name="aiTool"></label>
+            <label>Time saved (minutes) <input name="timeSavedMinutes"></label>
             <button type="submit">Create</button>
         </form>
     `;
