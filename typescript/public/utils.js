@@ -8,3 +8,17 @@ export function formatTime(minutes) {
 
     return `${mins}min`; 
 }
+
+export async function apiRequest(url, options = {}) {
+    try {
+        const res = await fetch(url, options);
+        const payload = await res.json();
+        
+        if (!res.ok) {
+            return { data: null, error: payload.error || "An unexpected error occurred." };
+        }
+        return { data: payload, error: null };
+    } catch (err) {
+        return { data: null, error: "Network communication failure. Please check your connection." };
+    }
+}
